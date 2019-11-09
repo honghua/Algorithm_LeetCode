@@ -8,40 +8,48 @@ public class IsBipartite {
 	 * https://leetcode.com/problems/is-graph-bipartite/
 	*/ 
 	
-	public boolean isBipartite(int[][] graph) {
-        Map<Integer, Integer> color = new HashMap<>();
-        for (int i = 0; i < graph.length; i++) {
-            if (!color.containsKey(i) && !isBipartite(i, color, graph)) return false;
-            // not visited  && Not a Bipartite ==> return false
+	// 以下是laiOffer 版本
+ static class GraphNode {
+   public int key;
+   public List<GraphNode> neighbors;
+   public GraphNode(int key) {
+   this.key = key;
+      this.neighbors = new ArrayList<GraphNode>();
+   }
+ }
+ 
+  public boolean isBipartite(List<GraphNode> graph) {
+    Map<GraphNode, Integer> color = new HashMap<>();
+    for (GraphNode node : graph) {
+      if (!color.containsKey(node) && ! isBipartite(node, color)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  private boolean isBipartite(GraphNode node, Map<GraphNode, Integer> color) {
+    Queue<GraphNode> queue = new ArrayDeque<>();
+    queue.offer(node);
+    node.key = 1; // use node.key to store prevColor
+
+    while (!queue.isEmpty()) {
+      GraphNode cur = queue.poll(); 
+      int curColor = color.getOrDefault(cur, 0);
+      if (curColor == 0) {
+        curColor = -cur.key;
+        color.put(cur, curColor);
+        for (GraphNode nei : cur.neighbors) {
+          nei.key = curColor; // 这句话可能有错!!!
+          // 被generate时改变了 prevColor，多次被generate 进queue 可能会有冲突
+          // 在queue中的node的prevColor也被改变了
+          queue.offer(nei);
         }
-        return true;
+      } else if (curColor == cur.key) {
+        return false;
+      }
     }
-    private boolean isBipartite(Integer node, Map<Integer, Integer> color, int[][] graph) {
-        Queue<Integer> queue = new ArrayDeque<>();
-        color.put(node, -1); // mark visited at generation
-        queue.offer(node);
-        
-        while (!queue.isEmpty()) {
-            int cur = queue.poll();
-            int curColor = color.get(cur);
-            
-            for (int nei : graph[cur]) {
-                int neiColor = color.getOrDefault(nei, 0);
-                if (neiColor == 0) {
-                    color.put(nei, -curColor); // mark visited at generation
-                    queue.offer(nei);
-                } else if (neiColor == curColor) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    public static void main(String[] args) {
-    	int[][] graph = {{1,2,3}, {0,2}, {0,1,3}, {0,2}};
-    	IsBipartite sol = new IsBipartite();
-    	System.out.println(sol.isBipartite(graph));
-    }
+    return true;
+  }
 }
 
