@@ -8,7 +8,7 @@ public class IsBipartite {
 	 * https://leetcode.com/problems/is-graph-bipartite/
 	*/ 
 	
-	// 以下是laiOffer 版本
+	// 以下solution 是针对Laicode 版本
  static class GraphNode {
    public int key;
    public List<GraphNode> neighbors;
