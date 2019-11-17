@@ -3,41 +3,63 @@ package bfs;
 import java.util.*;
 
 public class SlidingPuzzle {
+	static class Pattern {
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Pattern other = (Pattern) obj;
+			return Arrays.deepEquals(pattern, other.pattern);
+		}
+
+		int[][] pattern;
+		public Pattern(int[][] pattern) {
+			this.pattern = pattern;
+		}		
+	}
+	
 	private static final int[][] directions = new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 	public int sliding(int[][] initPattern, int[][] finalPattern) {
-		Queue<int[][]> queue = new ArrayDeque<>();
-		Set<int[][]> visited = new HashSet<>();
+		Queue<int[][]> queue = new ArrayDeque<>(); // queue for bfs
+		Set<Pattern> visited = new HashSet<>(); // set for mark visit
 		
 		queue.offer(initPattern);
-		visited.add(initPattern);
+		visited.add(new Pattern(initPattern));
 		int level = 0;
 		while (!queue.isEmpty()) {
 			int size = queue.size();
 			level++;
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; i++) { // expand at current level
 				int[][] cur = queue.poll();
 				for (int[][] nei : neighbors(cur, visited)) {
-					if (isSamePattern(nei, finalPattern)) {
+//					if (isSamePattern(nei, finalPattern)) {
+//						return level;
+//					}
+					if (Arrays.deepEquals(nei, finalPattern)) {
 						return level;
 					}
 					queue.offer(nei);
-					visited.add(nei);
+					visited.add(new Pattern(nei));
 				}
 			}
 		}
 		return -1;
 	}
 	
-	private List<int[][]> neighbors(int[][] cur, Set<int[][]> visited) {
+	private List<int[][]> neighbors(int[][] cur, Set<Pattern> visited) {
 		List<int[][]> neighbors =  new ArrayList<>();
 		
-		int[] pos = findZero(cur);
+		int[] zeorPos = findZero(cur);
 		for (int[] e : directions) {
-			int row = pos[0] + e[0], col = pos[1] + e[1];
+			int row = zeorPos[0] + e[0], col = zeorPos[1] + e[1];
 			if (0 <= row && row < cur.length && 0 <= col && col < cur[0].length) {
 				int[] newPos = new int[] {row, col};
-				int[][] nei = swapNeighbor(cur, pos, newPos);
-				if (!visited.contains(nei)) {
+				int[][] nei = swapNeighbor(cur, zeorPos, newPos);
+				if (!visited.contains(new Pattern(nei))) {
 					neighbors.add(nei);
 				}
 			}
@@ -58,7 +80,7 @@ public class SlidingPuzzle {
 	private int[][] swapNeighbor(int[][] cur, int[] pos, int[] newPos) {
 		int[][] copy = new int[cur.length][cur[0].length];
 		for (int i = 0; i < cur.length; i++) {
-			for (int j = 0; j < cur.length; j++) {
+			for (int j = 0; j < cur[0].length; j++) {
 				copy[i][j] = cur[i][j];
 			}
 		}
@@ -80,15 +102,29 @@ public class SlidingPuzzle {
 	}
 	
 	public static void main(String[] args) {
-		Set<List<Integer>> set = new HashSet<>();
-		List<Integer> a = new ArrayList<>();
-		a.add(1);
-		List<Integer> b = new ArrayList<>();
-		b.add(1);
-		set.add(a);
-		set.add(b);
-		System.out.println(set);
-		
+		int[][] initPattern = new int[][] {
+			{4,1,2},
+			{5,0,3}
+		};
+//		initPattern = new int[][] {
+//			{1,2,3},
+//			{4,0,5}
+//		};
+		initPattern = new int[][] {
+			{1,2,3},
+			{5,4,0}
+		};
+		int[][] finalPattern = new int[][]{
+            {1,2,3},
+            {4,5,0}
+        };
+        
+        SlidingPuzzle sol = new SlidingPuzzle();
+        System.out.println(sol.sliding(initPattern, finalPattern));
+        
+        boolean check = (new SlidingPuzzle.Pattern(initPattern)).equals((new SlidingPuzzle.Pattern(initPattern)));
+//        check = sol.isSamePattern(initPattern, finalPattern);
+        System.out.println(check);
 	}
 	
 }
